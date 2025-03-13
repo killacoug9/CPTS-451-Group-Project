@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     res_start_date TIMESTAMP NOT NULL,
     res_end_date TIMESTAMP NOT NULL,
     reservation_status VARCHAR(50) CHECK (reservation_status IN ('pending', 'approved', 'denied')),
-    reserved_quantity INTEGER CHECK (reserved_quantity > 0)
+    reserved_quantity INTEGER CHECK (reserved_quantity > 0),
+    CONSTRAINT unique_reservation UNIQUE(user_id, equipment_id, res_start_date)
 );
 
 -- Reservations Admins Table
@@ -53,8 +54,7 @@ CREATE TABLE IF NOT EXISTS reservations_admins (
 
 -- Admins Table
 CREATE TABLE IF NOT EXISTS admins (
-    id SERIAL PRIMARY KEY,
-    admin_name VARCHAR(50) NOT NULL
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Usage Logs Table
@@ -62,7 +62,8 @@ CREATE TABLE IF NOT EXISTS usage_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     equipment_id INTEGER REFERENCES equipment(id) ON DELETE CASCADE,
-    usage_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    usage_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_usage_log UNIQUE(user_id, equipment_id, usage_date)
 );
 
 -- Suppliers Table
@@ -77,7 +78,8 @@ CREATE TABLE IF NOT EXISTS supplied (
     supplier_id INTEGER REFERENCES suppliers(id) ON DELETE CASCADE,
     equipment_id INTEGER REFERENCES equipment(id) ON DELETE CASCADE,
     quantity INTEGER CHECK (quantity > 0),
-    date_supplied TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_supplied TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_supplier_equipment UNIQUE(supplier_id, equipment_id)
 );
 
 -- Notifications Table
@@ -85,5 +87,6 @@ CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     notification_message TEXT NOT NULL,
-    notification_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    notification_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_notification UNIQUE(user_id, notification_message)
 );

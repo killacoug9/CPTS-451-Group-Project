@@ -5,7 +5,7 @@
 -- Roles Table
 CREATE TABLE IF NOT EXISTS roles (
     id SERIAL PRIMARY KEY,
-    role VARCHAR(50) NOT NULL
+    role_name VARCHAR(50) NOT NULL
 );
 
 -- Users table
@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS reservations (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     equipment_id INTEGER REFERENCES equipment(id) ON DELETE CASCADE,
-    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
+    res_request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    res_start_date TIMESTAMP NOT NULL,
+    res_end_date TIMESTAMP NOT NULL,
     reservation_status VARCHAR(50) CHECK (reservation_status IN ('pending', 'approved', 'denied')),
     reserved_quantity INTEGER CHECK (reserved_quantity > 0)
 );

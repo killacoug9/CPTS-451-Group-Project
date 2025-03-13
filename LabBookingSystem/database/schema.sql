@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Equipment Table
 CREATE TABLE IF NOT EXISTS equipment (
     id SERIAL PRIMARY KEY,
-    equip_name VARCHAR(50) NOT NULL,
+    equip_name VARCHAR(50) UNIQUE NOT NULL,
     category VARCHAR(50),
     specifications TEXT,
     equip_status VARCHAR(50) CHECK (equip_status IN ('available', 'in_use', 'maintenance')),

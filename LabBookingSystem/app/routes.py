@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import User, Role, Reservation, Equipment, Supplied, Notification, Supplier, ReservationAdmin
+from app.models import User, Role, Reservation, Equipment, Supplied, Notification, Supplier, ReservationAdmin, UsageLog, \
+    Admin
 
 main = Blueprint("main", __name__)
 api = Blueprint("api", __name__, url_prefix='/api')
@@ -191,12 +192,12 @@ def delete_role(id):
 @api.route('/notifications', methods=['GET'])
 def get_notifications():
     notifications = Notification.query.all()
-    return jsonify([{'id': n.id, 'user_id': n.user_id, 'message': n.message} for n in notifications])
+    return jsonify([{'id': n.id, 'user_id': n.user_id, 'message': n.notification_message} for n in notifications])
 
 @api.route('/notifications', methods=['POST'])
 def create_notification():
     data = request.get_json()
-    notification = Notification(user_id=data['user_id'], message=data['message'])
+    notification = Notification(user_id=data['user_id'], notification_message=data['message'])
     db.session.add(notification)
     db.session.commit()
     return jsonify({"message": "Notification created successfully"}), 201
@@ -237,7 +238,7 @@ def delete_reservation_admin(id):
 @api.route('/supplied', methods=['POST'])
 def create_supplied():
     data = request.get_json()
-    supplied = Supplied(supplier_id=data['supplier_id'], equipment_id=data['equipment_id'], supplied_quantity=data['supplied_quantity'])
+    supplied = Supplied(supplier_id=data['supplier_id'], equipment_id=data['equipment_id'], quantity=data['quantity'])
     db.session.add(supplied)
     db.session.commit()
     return jsonify({"message": "Supplied record created successfully"}), 201
@@ -245,7 +246,7 @@ def create_supplied():
 @api.route('/supplied', methods=['GET'])
 def get_supplied():
     supplied_records = Supplied.query.all()
-    return jsonify([{'id': s.id, 'supplier_id': s.supplier_id, 'equipment_id': s.equipment_id, 'supplied_quantity': s.supplied_quantity} for s in supplied_records])
+    return jsonify([{'id': s.id, 'supplier_id': s.supplier_id, 'equipment_id': s.equipment_id, 'quantity': s.quantity} for s in supplied_records])
 
 @api.route('/supplied/<int:id>', methods=['PUT'])
 def update_supplied(id):
@@ -254,7 +255,7 @@ def update_supplied(id):
     if supplied:
         supplied.supplier_id = data.get('supplier_id', supplied.supplier_id)
         supplied.equipment_id = data.get('equipment_id', supplied.equipment_id)
-        supplied.supplied_quantity = data.get('supplied_quantity', supplied.supplied_quantity)
+        supplied.supplied_quantity = data.get('quantity', supplied.quantity)
         db.session.commit()
         return jsonify({"message": "Supplied entry updated successfully"})
     return jsonify({"message": "Supplied entry not found"}), 404
@@ -277,6 +278,11 @@ def create_supplier():
     db.session.commit()
     return jsonify({"message": "Supplier created successfully"}), 201
 
+@api.route('/suppliers', methods=['GET'])
+def get_suppliers():
+    supplier_records = Supplier.query.all()
+    return jsonify([{'id': s.id, 'supplier_name': s.supplier_name} for s in supplier_records])
+
 @api.route('/suppliers/<int:id>', methods=['PUT'])
 def update_supplier(id):
     data = request.get_json()
@@ -296,3 +302,66 @@ def delete_supplier(id):
         db.session.commit()
         return jsonify({"message": "Supplier deleted successfully"})
     return jsonify({"message": "Supplier not found"}), 404
+
+
+# Create UsageLog
+@api.route('/usage_logs', methods=['POST'])
+def create_usage_log():
+    data = request.get_json()
+    try:
+        usage_log = UsageLog(user_id=data['user_id'], equipment_id=data['equipment_id'])
+        db.session.add(usage_log)
+        db.session.commit()
+        return jsonify({"message": "UsageLog created successfully", "usage_log": {'id': usage_log.id, 'user_id': usage_log.user_id, 'equipment_id': usage_log.equipment_id, 'usage_date': usage_log.usage_date}}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+# Get all UsageLogs
+@api.route('/usage_logs', methods=['GET'])
+def get_usage_logs():
+    usage_logs = UsageLog.query.all()
+    return jsonify([{'id': log.id, 'user_id': log.user_id, 'equipment_id': log.equipment_id, 'usage_date': log.usage_date} for log in usage_logs])
+
+# Get a specific UsageLog by ID
+@api.route('/usage_logs/<int:id>', methods=['GET'])
+def get_usage_log(id):
+    usage_log = UsageLog.query.get(id)
+    if usage_log:
+        return jsonify({'id': usage_log.id, 'user_id': usage_log.user_id, 'equipment_id': usage_log.equipment_id, 'usage_date': usage_log.usage_date})
+    return jsonify({"message": "UsageLog not found"}), 404
+
+# Update UsageLog
+@api.route('/usage_logs/<int:id>', methods=['PUT'])
+def update_usage_log(id):
+    data = request.get_json()
+    usage_log = UsageLog.query.get(id)
+    if usage_log:
+        usage_log.user_id = data.get('user_id', usage_log.user_id)
+        usage_log.equipment_id = data.get('equipment_id', usage_log.equipment_id)
+        db.session.commit()
+        return jsonify({"message": "UsageLog updated successfully"})
+    return jsonify({"message": "UsageLog not found"}), 404
+
+# Delete UsageLog
+@api.route('/usage_logs/<int:id>', methods=['DELETE'])
+def delete_usage_log(id):
+    usage_log = UsageLog.query.get(id)
+    if usage_log:
+        db.session.delete(usage_log)
+        db.session.commit()
+        return jsonify({"message": "UsageLog deleted successfully"})
+    return jsonify({"message": "UsageLog not found"}), 404
+
+
+#### DO WE NEED OTHER ADMIN FUNCTIONS??
+# Get all Admins
+@api.route('/admins', methods=['GET'])
+def get_admins():
+    #if not is_admin():  # Check if the user is an admin
+        #return jsonify({"message": "Unauthorized"}), 403
+
+    admins = Admin.query.all()
+    return jsonify([{'user_id': admin.user_id} for admin in admins])
+
+### ADD RESERVATIONADMIN CRUD Operations?

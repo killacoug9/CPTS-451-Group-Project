@@ -26,18 +26,27 @@ that it can be addressed later.
 Below are the issues completed during this sprint:
 Christian Manangan
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/3
+Story Points: 4
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/4
+Story Points: 5
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/5
+Story Points: 3
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/6
+Story Points: 3
 
 Kyle Hawkins
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/7
+Story Points: 5
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/8
+Story Points: 5
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/9
+Story Points: 2
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/10
+Story Points: 5
 
 Ethan Frazier
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/10
+Story Points: 5
   
 ## Incomplete Issues/User Stories
 Here are links to issues we worked on but did not complete in this sprint:

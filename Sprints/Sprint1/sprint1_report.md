@@ -8,7 +8,7 @@ Video Link:
 * Kanban Board Swtup
   
 ## Work Summary (Developer Facing)
-Out team focused on the laying the foundational work for the Lab Booking System.
+Our team focused on the laying the foundational work for the Lab Booking System.
 We setup the PostgreSQL database and populated it with sample data using SQL scripts.
 Additionally, we build the Flask backend, connected it to PostgreSQL, and created
 some API endpoints that need further testing.

@@ -10,7 +10,7 @@ Video Link:
 ## Work Summary (Developer Facing)
 Our team focused on the laying the foundational work for the Lab Booking System.
 We setup the PostgreSQL database and populated it with sample data using SQL scripts.
-Additionally, we build the Flask backend, connected it to PostgreSQL, and created
+Additionally, we built the Flask backend, connected it to PostgreSQL, and created
 some API endpoints that need further testing.
 
 ## Unfinished Work

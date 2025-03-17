@@ -1,4 +1,4 @@
-# Sprint x Report
+# Sprint 1 Report
 Video Link:
 
 ## What's New (User Facing)
@@ -8,10 +8,10 @@ Video Link:
 * Kanban Board Swtup
   
 ## Work Summary (Developer Facing)
-Provide a one paragraph synposis of what your team accomplished this sprint. Don't
-repeat the "What's New" list of features. Instead, help the instructor understand
-how you went about the work described there, any barriers you overcame, and any
-significant learnings for your team.
+Out team focused on the laying the foundational work for the Lab Booking System.
+We setup the PostgreSQL database and populated it with sample data using SQL scripts.
+Additionally, we build the Flask backend, connected it to PostgreSQL, and created
+some API endpoints that need further testing.
 
 ## Unfinished Work
 If applicable, explain the work you did not finish in this sprint. For issues/user

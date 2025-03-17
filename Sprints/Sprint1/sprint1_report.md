@@ -21,20 +21,23 @@ acceptance criteria), (b) a comment has been added to the issue to explain why t
 issue could not be completed (e.g., "we ran out of time" or "we did not anticipate
 it would be so much work"), and (c) the issue is added to a subsequent sprint, so
 that it can be addressed later.
+
 ## Completed Issues/User Stories
-Here are links to the issues that we completed in this sprint:
-* URL of issue 1
-* URL of issue 2
-* URL of issue n
-  
-Desirables (Remove this section when you save the file):
-* Each issue should be assigned to a milestone
-* Each completed issue should be assigned to a pull request
-* Each completed pull request should include a link to a "Before and After" video
-* All team members who contributed to the issue should be assigned to it on
-GitHub
-* Each issue should be assigned story points using a label
-* Story points contribution of each team member should be indicated in a comment
+Below are the issues completed during this sprint:
+Christian Manangan
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/3
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/4
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/5
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/6
+
+Kyle Hawkins
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/7
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/8
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/9
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/10
+
+Ethan Frazier
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/10
   
 ## Incomplete Issues/User Stories
 Here are links to issues we worked on but did not complete in this sprint:

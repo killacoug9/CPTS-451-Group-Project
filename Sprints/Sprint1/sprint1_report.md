@@ -1,5 +1,5 @@
 # Sprint 1 Report
-Video Link:
+Video Link: https://youtu.be/0Cb05HHluNc
 
 ## What's New (User Facing)
 * Database Setup & Sample Data
@@ -14,13 +14,7 @@ Additionally, we built the Flask backend, connected it to PostgreSQL, and create
 some API endpoints that need further testing.
 
 ## Unfinished Work
-If applicable, explain the work you did not finish in this sprint. For issues/user
-stories in the current sprint that have not been closed, (a) any progress toward
-completion of the issues has been clearly tracked (by checking the checkboxes of
-acceptance criteria), (b) a comment has been added to the issue to explain why the
-issue could not be completed (e.g., "we ran out of time" or "we did not anticipate
-it would be so much work"), and (c) the issue is added to a subsequent sprint, so
-that it can be addressed later.
+NONE
 
 ## Completed Issues/User Stories
 Below are the issues completed during this sprint:

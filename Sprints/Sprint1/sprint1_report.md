@@ -45,15 +45,10 @@ Story Points: 5
   
 ## Incomplete Issues/User Stories
 Here are links to issues we worked on but did not complete in this sprint:
-* URL of issue 1 <<One sentence explanation of why issue was not completed>>
-* URL of issue 2 <<One sentence explanation of why issue was not completed>>
-* URL of issue n <<One sentence explanation of why issue was not completed>>
-Examples of explanations (Remove this section when you save the file):
-* "We ran into a complication we did not anticipate (explain briefly)."
-* "We decided that the feature did not add sufficient value for us to work on it
-in this sprint (explain briefly)."
-* "We could not reproduce the bug" (explain briefly).
-* "We did not get to this issue because..." (explain briefly)
+
+https://github.com/killacoug9/CPTS-451-Group-Project/issues/10
+
+Additional testing may be needed and will be continued in the next sprint as more features are implemented. 
   
 ## Code Files for Review
 Please review the following code files, which were actively developed during this

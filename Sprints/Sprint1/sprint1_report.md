@@ -18,6 +18,7 @@ NONE
 
 ## Completed Issues/User Stories
 Below are the issues completed during this sprint:
+
 Christian Manangan
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/3
 Story Points: 4

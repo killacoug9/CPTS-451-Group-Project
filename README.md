@@ -35,6 +35,9 @@ PGPASSWORD=x psql -h dpg-xx-a.oregon-postgres.render.com -U lab_admin lab_book_s
 lab_book_systems=> \dt
 ```
 
+## Flask Setup
+1. Run `python3 run.py`
+
 ## Frontend Setup
 Inside the frontend folder
 1. Run `npm install`

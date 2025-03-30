@@ -1,0 +1,39 @@
+.equipment-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-table {
+    width: 80%;
+    margin: 2rem auto;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+
+.equipment-heading {
+    text-align: center;
+}
+
+.equipment-table th,
+.equipment-table td {
+    padding: 14px 20px;
+    text-align: left;
+    border: 1px solid lightgray;
+}
+
+.equipment-table th {
+    background-color: #8b2424;
+    color: white;
+}
+
+.equipment-table tr:nth-child(even) {
+    background-color: rgb(237, 237, 237);
+}
+
+.equipment-table tr:hover {
+    background-color: #f3ebeb;
+}

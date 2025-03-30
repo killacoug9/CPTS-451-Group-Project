@@ -1,5 +1,5 @@
 # CPTS-451-Group-Project
-## Setup
+## Database Setup
 1. Clone the Repository
 ```
 git clone <repo-url>
@@ -34,3 +34,9 @@ Note: PGPASSWORD and dpg-xx details are in the discord
 PGPASSWORD=x psql -h dpg-xx-a.oregon-postgres.render.com -U lab_admin lab_book_system
 lab_book_systems=> \dt
 ```
+
+## Frontend Setup
+Inside the frontend folder
+1. Run `npm install`
+2. Run `npm start`
+3. Make sure to add node_modules in the .gitignore

@@ -93,9 +93,8 @@ class Notification(db.Model):
 
 class ReservationAdmin(db.Model):
     __tablename__ = "reservations_admins"
-    id = db.Column(db.Integer, primary_key=True)
-    reservation_id = db.Column(db.Integer, db.ForeignKey("reservations.id"), nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey("admins.user_id"), nullable=False)
+    reservation_id = db.Column(db.Integer, db.ForeignKey("reservations.id"), nullable=False, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("admins.user_id"), nullable=False, primary_key=True)
 
     # Relationship with Admin
     admin = db.relationship('Admin', back_populates='reservation_admins')

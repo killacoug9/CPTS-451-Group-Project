@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import and_, func
+from datetime import datetime
 from app import db
 from app.models import User, Role, Reservation, Equipment, Supplied, Notification, Supplier, ReservationAdmin, UsageLog, \
     Admin
@@ -6,9 +8,261 @@ from app.models import User, Role, Reservation, Equipment, Supplied, Notificatio
 main = Blueprint("main", __name__)
 api = Blueprint("api", __name__, url_prefix='/api')
 
+EQUIPMENT_AVAILABLE_STATUS = 'available'
+RESERVATION_PENDING_STATUS = 'pending'
+RESERVATION_APPROVED_STATUS = 'approved'
+RESERVATION_REJECTED_STATUS = 'rejected'
+RESERVATION_CANCELLED_STATUS = 'cancelled'
+RESERVATION_FULL_STATUS = 'in_use'
+
+
 @main.route("/")
 def home():
     return jsonify({"message": "Lab Booking System API is running!"})
+
+
+# Check equipment availability for specific dates
+@api.route('/equipment/availability', methods=['POST'])
+def check_equipment_availability():
+    data = request.get_json()
+
+    # Required parameters
+    equipment_id = data.get('equipment_id')
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    requested_quantity = data.get('quantity', 1)
+
+    # Convert string dates to datetime objects
+    try:
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+    except ValueError:
+        return jsonify({"error": "Invalid date format"}), 400
+
+    # Get the equipment
+    equipment = Equipment.query.get(equipment_id)
+    if not equipment:
+        return jsonify({"error": "Equipment not found"}), 404
+
+    # Check if the equipment is available
+    if equipment.equip_status != EQUIPMENT_AVAILABLE_STATUS:
+        return jsonify({
+            "available": False,
+            "message": f"Equipment is {equipment.equip_status}",
+            "available_quantity": 0
+        }), 200
+
+    # Calculate how many units are already reserved for the requested dates
+    reserved_quantity = db.session.query(
+        func.sum(Reservation.reserved_quantity)
+    ).filter(
+        Reservation.equipment_id == equipment_id,
+        Reservation.reservation_status.in_([RESERVATION_PENDING_STATUS, RESERVATION_APPROVED_STATUS]),
+        and_(
+            Reservation.res_start_date <= end_date,
+            Reservation.res_end_date >= start_date
+        )
+    ).scalar() or 0
+
+    # Calculate available quantity
+    available_quantity = equipment.total_quantity - reserved_quantity
+
+    # Check if the requested quantity is available
+    if available_quantity < requested_quantity:
+        return jsonify({
+            "available": False,
+            "message": f"Only {available_quantity} units available for the selected dates",
+            "available_quantity": available_quantity
+        }), 200
+
+    return jsonify({
+        "available": True,
+        "message": "Equipment is available for the selected dates",
+        "available_quantity": available_quantity
+    }), 200
+
+
+# Enhanced reservation creation endpoint
+@api.route('/reservations', methods=['POST'])
+def create_reservation():
+    data = request.get_json()
+
+    try:
+        # Check if requested quantity is available
+        equipment_id = data.get('equipment_id')
+        start_date = data.get('res_start_date')
+        end_date = data.get('res_end_date')
+        requested_quantity = data.get('reserved_quantity', 1)
+
+        # Convert string dates to datetime objects if they are strings
+        if isinstance(start_date, str):
+            start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        if isinstance(end_date, str):
+            end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+
+        # Get the equipment
+        equipment = Equipment.query.get(equipment_id)
+        if not equipment:
+            return jsonify({"error": "Equipment not found"}), 404
+
+        # Check equipment status
+        if equipment.equip_status != EQUIPMENT_AVAILABLE_STATUS:
+            return jsonify({"error": f"Equipment is {equipment.equip_status}"}), 400
+
+        # Calculate how many units are already reserved for the requested dates
+        reserved_quantity = db.session.query(
+            func.sum(Reservation.reserved_quantity)
+        ).filter(
+            Reservation.equipment_id == equipment_id,
+            Reservation.reservation_status.in_([RESERVATION_PENDING_STATUS, RESERVATION_APPROVED_STATUS]),
+            and_(
+                Reservation.res_start_date <= end_date,
+                Reservation.res_end_date >= start_date
+            )
+        ).scalar() or 0
+
+        # Calculate available quantity
+        available_quantity = equipment.total_quantity - reserved_quantity
+
+        # Check if the requested quantity is available
+        if available_quantity < requested_quantity:
+            return jsonify({
+                "error": f"Only {available_quantity} units available for the selected dates"
+            }), 400
+
+        # Create the reservation
+        reservation = Reservation(
+            user_id=data['user_id'],
+            equipment_id=data['equipment_id'],
+            res_start_date=start_date,
+            res_end_date=end_date,
+            reserved_quantity=requested_quantity,
+            reservation_status=RESERVATION_PENDING_STATUS  # Initial status
+        )
+
+        db.session.add(reservation)
+
+        # Update equipment status if all units are now reserved
+        remaining_quantity = equipment.total_quantity - (reserved_quantity + requested_quantity)
+        if remaining_quantity <= 0:
+            equipment.equip_status = RESERVATION_FULL_STATUS
+
+        # Create a notification for the user
+        notification = Notification(
+            user_id=data['user_id'],
+            notification_message=f"Your reservation for {equipment.equip_name} has been submitted and is pending approval."
+        )
+        db.session.add(notification)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Reservation created successfully",
+            "reservation": {
+                'id': reservation.id,
+                'user_id': reservation.user_id,
+                'equipment_id': reservation.equipment_id,
+                'res_start_date': reservation.res_start_date.isoformat(),
+                'res_end_date': reservation.res_end_date.isoformat(),
+                'reserved_quantity': reservation.reserved_quantity,
+                'reservation_status': reservation.reservation_status
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+# Endpoint to approve or reject reservations (for admins)
+@api.route('/reservations/<int:id>/status', methods=['PUT'])
+def update_reservation_status(id):
+    data = request.get_json()
+    new_status = data.get('status')
+    admin_id = data.get('admin_id')
+
+    if not new_status or not admin_id:
+        return jsonify({"error": "Status and admin_id are required"}), 400
+
+    # Ensure status is lowercase to match constraint
+    new_status = new_status.lower()
+
+    if new_status not in [RESERVATION_APPROVED_STATUS, RESERVATION_REJECTED_STATUS, RESERVATION_CANCELLED_STATUS]:
+        return jsonify({"error": "Invalid status"}), 400
+
+    reservation = Reservation.query.get(id)
+    if not reservation:
+        return jsonify({"message": "Reservation not found"}), 404
+
+    # Check if admin exists
+    admin = Admin.query.filter_by(user_id=admin_id).first()
+    user = User.query.get(admin_id)
+
+    is_admin = admin is not None or (user and user.role_id == 1)
+    if not is_admin:
+        return jsonify({"error": "Admin not found"}), 404
+
+    try:
+        # Update reservation status
+        reservation.reservation_status = new_status
+
+        # Create admin-reservation association
+        reservation_admin = ReservationAdmin(
+            reservation_id=reservation.id,
+            admin_id=admin_id
+        )
+        db.session.add(reservation_admin)
+
+        # Create a notification for the user
+        equipment = Equipment.query.get(reservation.equipment_id)
+        notification = Notification(
+            user_id=reservation.user_id,
+            notification_message=f"Your reservation for {equipment.equip_name} has been {new_status.lower()}."
+        )
+        db.session.add(notification)
+
+        # Update equipment status if needed
+        if new_status == RESERVATION_APPROVED_STATUS:
+            # If all equipment units are now booked, update status
+            check_equipment_fully_booked(reservation.equipment_id)
+        elif new_status in [RESERVATION_REJECTED_STATUS, RESERVATION_CANCELLED_STATUS]:
+            # Update equipment status if it was fully booked
+            equipment = Equipment.query.get(reservation.equipment_id)
+            if equipment.equip_status == RESERVATION_FULL_STATUS:
+                equipment.equip_status = EQUIPMENT_AVAILABLE_STATUS
+
+        db.session.commit()
+
+        return jsonify({"message": f"Reservation {new_status.lower()} successfully"})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+# Helper function to check if equipment is fully booked
+def check_equipment_fully_booked(equipment_id):
+    equipment = Equipment.query.get(equipment_id)
+    if not equipment:
+        return
+
+    # Get the total reserved quantity
+    total_reserved = db.session.query(
+        func.sum(Reservation.reserved_quantity)
+    ).filter(
+        Reservation.equipment_id == equipment_id,
+        Reservation.reservation_status == RESERVATION_APPROVED_STATUS
+    ).scalar() or 0
+
+    # Update equipment status based on availability
+    if total_reserved >= equipment.total_quantity:
+        equipment.equip_status = RESERVATION_FULL_STATUS
+    else:
+        equipment.equip_status = EQUIPMENT_AVAILABLE_STATUS
+
+###########
+###CRUD ROUTES BELOW
+##########
 
 # Create User
 @api.route('/users', methods=['POST'])
@@ -37,7 +291,7 @@ def get_user(id):
         return jsonify({'id': user.id, 'user_name': user.user_name, 'email': user.email})
     return jsonify({"message": "User not found"}), 404
 
-# Update User
+
 @api.route('/users/<int:id>', methods=['PUT'])
 def update_user(id):
     data = request.get_json()
@@ -45,6 +299,24 @@ def update_user(id):
     if user:
         user.user_name = data.get('user_name', user.user_name)
         user.email = data.get('email', user.email)
+
+        if 'role_id' in data and data['role_id'] != user.role_id:
+            old_role_id = user.role_id
+            user.role_id = data['role_id']
+
+            # If changing to admin role, add to Admin table
+            if data['role_id'] == 1:
+                admin = Admin.query.filter_by(user_id=id).first()
+                if not admin:
+                    admin = Admin(user_id=id)
+                    db.session.add(admin)
+
+            # If changing from admin role, remove from Admin table
+            elif old_role_id == 1:
+                admin = Admin.query.filter_by(user_id=id).first()
+                if admin:
+                    db.session.delete(admin)
+
         db.session.commit()
         return jsonify({"message": "User updated successfully"})
     return jsonify({"message": "User not found"}), 404
@@ -112,18 +384,18 @@ def delete_equipment(id):
     return jsonify({"message": "Equipment not found"}), 404
 
 
-# Create Reservation
-@api.route('/reservations', methods=['POST'])
-def create_reservation():
-    data = request.get_json()
-    try:
-        reservation = Reservation(user_id=data['user_id'], equipment_id=data['equipment_id'], res_start_date=data['res_start_date'], res_end_date=data['res_end_date'], reserved_quantity=data['reserved_quantity'], reservation_status=data['reservation_status'])
-        db.session.add(reservation)
-        db.session.commit()
-        return jsonify({"message": "Reservation created successfully"}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+# # Create Reservation
+# @api.route('/reservations', methods=['POST'])
+# def create_reservation():
+#     data = request.get_json()
+#     try:
+#         reservation = Reservation(user_id=data['user_id'], equipment_id=data['equipment_id'], res_start_date=data['res_start_date'], res_end_date=data['res_end_date'], reserved_quantity=data['reserved_quantity'], reservation_status=data['reservation_status'])
+#         db.session.add(reservation)
+#         db.session.commit()
+#         return jsonify({"message": "Reservation created successfully"}), 201
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": str(e)}), 400
 
 # Get all Reservations
 @api.route('/reservations', methods=['GET'])
@@ -178,6 +450,15 @@ def create_role():
 def get_roles():
     roles = Role.query.all()
     return jsonify([{'id': r.id, 'role_name': r.role_name} for r in roles])
+
+# Get a specific role by ID
+@api.route('/roles/<int:id>', methods=['GET'])
+def get_role(id):
+    role = Role.query.get(id)
+    if role:
+        return jsonify({'id': role.id, 'role_name': role.role_name})
+    return jsonify({"message": "Role not found"}), 404
+
 
 @api.route('/roles/<int:id>', methods=['DELETE'])
 def delete_role(id):
@@ -364,4 +645,52 @@ def get_admins():
     admins = Admin.query.all()
     return jsonify([{'user_id': admin.user_id} for admin in admins])
 
-### ADD RESERVATIONADMIN CRUD Operations?
+
+# Sync Admin table with users that have role_id=1
+@api.route('/admin/sync', methods=['POST'])
+def sync_admin_table():
+    try:
+        # Get all users with role_id=1
+        admin_users = User.query.filter_by(role_id=1).all()
+
+        # Add each to Admin table if not already there
+        count = 0
+        for user in admin_users:
+            admin = Admin.query.filter_by(user_id=user.id).first()
+            if not admin:
+                admin = Admin(user_id=user.id)
+                db.session.add(admin)
+                count += 1
+
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Admin table synchronized. Added {count} new admin entries."
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+@api.route('/admin/add/<int:user_id>', methods=['POST'])
+def add_user_to_admin(user_id):
+    try:
+        # Check if user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Check if already in Admin table
+        admin = Admin.query.filter_by(user_id=user_id).first()
+        if admin:
+            return jsonify({"message": "User is already in Admin table"}), 200
+
+        # Add to Admin table
+        admin = Admin(user_id=user_id)
+        db.session.add(admin)
+        db.session.commit()
+
+        return jsonify({"message": f"User {user_id} added to Admin table successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400

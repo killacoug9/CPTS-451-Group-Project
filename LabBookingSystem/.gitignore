@@ -1,2 +1,10 @@
 .env
+/.idea/.gitignore
+/.idea/LabBookingSystem.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
 /frontend/node_modules
+node_modules/
+jspm_packages/

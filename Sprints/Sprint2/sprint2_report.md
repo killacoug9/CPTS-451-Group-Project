@@ -1,5 +1,5 @@
 # Sprint 2 Report
-Video Link: 
+Video Link: https://youtu.be/FBjJYAYAK3k
 
 ## What's New (User Facing)
 * Frontend setup

@@ -8,7 +8,7 @@ Video Link:
 * Equipment page, booking functionality, admin approval, and profile options
   
 ## Work Summary (Developer Facing)
-Our team focused on the frontend as well as some of the core features for the Lab Booking System. Users are able to sign up and log in. We have an Equipment page that pulls data from the PostgreSQL database and populates a table that is clear for a user. The user is now able to book reservations on the equipment and from the admin view, adm;ins can make a decision on them. Finally, we have a profile page that shows when the account was created. 
+Our team focused on the frontend as well as some of the core features for the Lab Booking System. Users are able to sign up and log in. We have an Equipment page that pulls data from the PostgreSQL database and populates a table that is clear for a user. The user is now able to book reservations on the equipment and from the admin view, admins can make a decision on them. Finally, we have a profile page that shows when the account was created. 
 
 ## Unfinished Work
 Testing of UI/UX. For every feature we added, we need to make sure there are no bugs or anomalies. We are unable to get updates or responses from the team member assigned to this issue. As of 04/06/25, there is no progress for this issue.

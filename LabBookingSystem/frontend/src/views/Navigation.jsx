@@ -47,6 +47,10 @@ const Navigation = () => {
                                 <Link to="/my-reservations" onClick={() => setShowMobileMenu(false)}>My Reservations</Link>
                             </li>
 
+                            <li>
+                                <Link to="/notifications" onClick={() => setShowMobileMenu(false)}>Notifications</Link>
+                            </li>   
+
                             {/* Admin-only links */}
                             {isAdmin() && (
                                 <li>

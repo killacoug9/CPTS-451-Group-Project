@@ -8,11 +8,11 @@ const AdminReservations = () => {
     const [adminId, setAdminId] = useState(null);
     const [users, setUsers] = useState({});
     const [equipment, setEquipment] = useState({});
-    const [filter, setFilter] = useState('pending'); // 'all', 'pending', 'approved', 'rejected'
+    const [filter, setFilter] = useState('pending'); // 'all', 'pending', 'approved', 'denied'
 
     const APPROVED_STATUS = 'approved';
     const PENDING_STATUS = 'pending';
-    const REJECTED_STATUS = 'rejected';
+    const REJECTED_STATUS = 'denied';
 
     useEffect(() => {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));

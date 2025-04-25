@@ -58,7 +58,7 @@ const Reservations = () => {
         switch (status.toLowerCase()) {
             case 'approved': return 'status-approved';
             case 'pending': return 'status-pending';
-            case 'rejected': return 'status-rejected';
+            case 'denied': return 'status-denied';
             case 'cancelled': return 'status-cancelled';
             default: return '';
         }

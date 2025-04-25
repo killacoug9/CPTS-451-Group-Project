@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     res_request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     res_start_date TIMESTAMP NOT NULL,
     res_end_date TIMESTAMP NOT NULL,
-    reservation_status VARCHAR(50) CHECK (reservation_status IN ('pending', 'approved', 'denied')),
+    reservation_status VARCHAR(50) CHECK (reservation_status IN ('pending', 'approved', 'denied', 'cancelled', 'in_use')),
     reserved_quantity INTEGER CHECK (reserved_quantity > 0),
     CONSTRAINT unique_reservation UNIQUE(user_id, equipment_id, res_start_date)
 );

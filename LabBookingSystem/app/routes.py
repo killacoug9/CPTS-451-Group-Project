@@ -11,7 +11,7 @@ api = Blueprint("api", __name__, url_prefix='/api')
 EQUIPMENT_AVAILABLE_STATUS = 'available'
 RESERVATION_PENDING_STATUS = 'pending'
 RESERVATION_APPROVED_STATUS = 'approved'
-RESERVATION_REJECTED_STATUS = 'rejected'
+RESERVATION_REJECTED_STATUS = 'denied'
 RESERVATION_CANCELLED_STATUS = 'cancelled'
 RESERVATION_FULL_STATUS = 'in_use'
 
@@ -150,7 +150,7 @@ def create_reservation():
         # Create a notification for the user
         notification = Notification(
             user_id=data['user_id'],
-            notification_message=f"Your reservation for {equipment.equip_name} has been submitted and is pending approval."
+            notification_message=f"Your reservation (ID: {reservation.id}) for {equipment.equip_name} has been submitted and is pending approval."
         )
         db.session.add(notification)
 
@@ -188,7 +188,7 @@ def update_reservation_status(id):
     new_status = new_status.lower()
 
     if new_status not in [RESERVATION_APPROVED_STATUS, RESERVATION_REJECTED_STATUS, RESERVATION_CANCELLED_STATUS]:
-        return jsonify({"error": "Invalid status"}), 400
+        return jsonify({"error": f"Invalid status '{new_status}'"}), 400
 
     reservation = Reservation.query.get(id)
     if not reservation:
@@ -217,7 +217,7 @@ def update_reservation_status(id):
         equipment = Equipment.query.get(reservation.equipment_id)
         notification = Notification(
             user_id=reservation.user_id,
-            notification_message=f"Your reservation for {equipment.equip_name} has been {new_status.lower()}."
+            notification_message=f"Your reservation (ID: {reservation.id}) for {equipment.equip_name} has been {new_status.lower()}."
         )
         db.session.add(notification)
 
@@ -401,7 +401,19 @@ def delete_equipment(id):
 @api.route('/reservations', methods=['GET'])
 def get_reservations():
     reservations = Reservation.query.all()
-    return jsonify([{'id': res.id, 'user_id': res.user_id, 'equipment_id': res.equipment_id, 'res_start_date': res.res_start_date, 'res_end_date': res.res_end_date, 'reserved_quantity': res.reserved_quantity, 'reservation_status': res.reservation_status} for res in reservations])
+    return jsonify([
+        {
+            'id': res.id,
+            'user_id': res.user_id,
+            'equipment_id': res.equipment_id,
+            'res_start_date': res.res_start_date.isoformat() if res.res_start_date else None,
+            'res_end_date': res.res_end_date.isoformat() if res.res_end_date else None,
+            'res_request_date': res.res_request_date.isoformat() if res.res_request_date else None,
+            'reserved_quantity': res.reserved_quantity,
+            'reservation_status': res.reservation_status
+        }
+        for res in reservations
+    ])
 
 # Get a specific Reservation by ID
 @api.route('/reservations/<int:id>', methods=['GET'])

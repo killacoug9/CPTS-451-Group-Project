@@ -14,6 +14,7 @@ import Register from './auth/Register';
 import UserProfile from './auth/UserProfile';
 import Reservations from './views/Reservations';
 import AdminReservations from './views/AdminReservations';
+import Notifications from './views/Notifications';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/equipment" element={<EquipmentList />} />
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/my-reservations" element={<Reservations />} />
+                <Route path="/notifications" element={<Notifications />} />
               </Route>
 
               {/* Admin-only routes */}

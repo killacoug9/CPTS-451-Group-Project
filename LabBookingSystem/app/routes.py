@@ -30,7 +30,10 @@ def check_equipment_availability():
     equipment_id = data.get('equipment_id')
     start_date = data.get('start_date')
     end_date = data.get('end_date')
-    requested_quantity = data.get('quantity', 1)
+    try:
+        requested_quantity = int(data.get('quantity', 1))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid quantity format"}), 400
 
     # Convert string dates to datetime objects
     try:
@@ -141,6 +144,7 @@ def create_reservation():
         )
 
         db.session.add(reservation)
+        db.session.commit()
 
         # Update equipment status if all units are now reserved
         remaining_quantity = equipment.total_quantity - (reserved_quantity + requested_quantity)
@@ -428,16 +432,39 @@ def get_reservation(id):
 def update_reservation(id):
     data = request.get_json()
     reservation = Reservation.query.get(id)
-    if reservation:
-        reservation.user_id = data.get('user_id', reservation.user_id)
-        reservation.equipment_id = data.get('equipment_id', reservation.equipment_id)
+    if not reservation:
+        return jsonify({"message": "Reservation not found"}), 404
+
+    if reservation.reservation_status != RESERVATION_PENDING_STATUS:
+        return jsonify({"message": "Only pending reservations can be edited"}), 403
+
+    try:
         reservation.res_start_date = data.get('res_start_date', reservation.res_start_date)
         reservation.res_end_date = data.get('res_end_date', reservation.res_end_date)
         reservation.reserved_quantity = data.get('reserved_quantity', reservation.reserved_quantity)
-        reservation.reservation_status = data.get('reservation_status', reservation.reservation_status)
+
         db.session.commit()
         return jsonify({"message": "Reservation updated successfully"})
-    return jsonify({"message": "Reservation not found"}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+@api.route('/reservations/<int:id>/cancel', methods=['PUT'])
+def cancel_reservation(id):
+    reservation = Reservation.query.get(id)
+    if not reservation:
+        return jsonify({"message": "Reservation not found"}), 404
+
+    if reservation.reservation_status != RESERVATION_PENDING_STATUS:
+        return jsonify({"message": "Only pending reservations can be cancelled"}), 403
+
+    try:
+        reservation.reservation_status = RESERVATION_CANCELLED_STATUS
+        db.session.commit()
+        return jsonify({"message": "Reservation cancelled successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
 # Delete Reservation
 @api.route('/reservations/<int:id>', methods=['DELETE'])

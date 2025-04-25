@@ -132,3 +132,58 @@
         grid-template-columns: 1fr;
     }
 }
+
+.edit-form {
+    margin-top: 10px;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.edit-form input {
+    display: block;
+    margin: 8px 0;
+    padding: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.save-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.cancel-edit-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancel-edit-button:hover {
+    background-color: #5a6268;
+}
+
+.edit-button {
+    background-color: #6c757d; 
+    color: white;
+    margin-left: 10px;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-button:hover {
+    background-color: #5a6268;
+}

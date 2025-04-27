@@ -17,6 +17,7 @@ NONE
 Below are the issues completed during this sprint:
 
 Christian Manangan
+
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/25
 Story Points: 2
 
@@ -24,6 +25,7 @@ https://github.com/killacoug9/CPTS-451-Group-Project/issues/26
 Story Points: 3
 
 Kyle Hawkins
+
 https://github.com/killacoug9/CPTS-451-Group-Project/issues/27
 Story Points: 5
 

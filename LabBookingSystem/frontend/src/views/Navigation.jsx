@@ -53,9 +53,14 @@ const Navigation = () => {
 
                             {/* Admin-only links */}
                             {isAdmin() && (
-                                <li>
-                                    <Link to="/admin/reservations" onClick={() => setShowMobileMenu(false)}>Manage Reservations</Link>
-                                </li>
+                                <>
+                                    <li>
+                                        <Link to="/admin/reservations" onClick={() => setShowMobileMenu(false)}>Manage Reservations</Link>
+                                    </li>
+                                    <li>
+                                    <Link to="/admin/dashboard" onClick={() => setShowMobileMenu(false)}>Analytics Dashboard</Link>
+                                    </li>
+                                </>
                             )}
 
                             <li className="profile-dropdown">

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import and_, func
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import db
 from app.models import User, Role, Reservation, Equipment, Supplied, Notification, Supplier, ReservationAdmin, UsageLog, \
     Admin
@@ -19,6 +19,177 @@ RESERVATION_FULL_STATUS = 'in_use'
 @main.route("/")
 def home():
     return jsonify({"message": "Lab Booking System API is running!"})
+
+
+# Admin analytics routes
+@api.route('/admin/analytics/equipment-usage', methods=['GET'])
+def get_equipment_usage():
+    # Get usage statistics for all equipment
+    equipment_usage = {}
+
+    # Count reservations for each equipment
+    equipment_res_counts = db.session.query(
+        Equipment.id,
+        Equipment.equip_name,
+        func.count(Reservation.id).label('reservation_count')
+    ).join(
+        Reservation, Reservation.equipment_id == Equipment.id
+    ).group_by(
+        Equipment.id, Equipment.equip_name
+    ).all()
+
+    for equip_id, equip_name, res_count in equipment_res_counts:
+        if equip_id not in equipment_usage:
+            equipment_usage[equip_id] = {
+                'id': equip_id,
+                'name': equip_name,
+                'reservation_count': res_count,
+                'usage_count': 0,
+                'denied_count': 0,
+                'pending_count': 0,
+                'approved_count': 0
+            }
+
+    # Count usage logs for each equipment
+    usage_counts = db.session.query(
+        Equipment.id,
+        func.count(UsageLog.id).label('usage_count')
+    ).join(
+        UsageLog, UsageLog.equipment_id == Equipment.id
+    ).group_by(
+        Equipment.id
+    ).all()
+
+    for equip_id, usage_count in usage_counts:
+        if equip_id in equipment_usage:
+            equipment_usage[equip_id]['usage_count'] = usage_count
+
+    # Count reservation statuses
+    status_counts = db.session.query(
+        Equipment.id,
+        Reservation.reservation_status,
+        func.count(Reservation.id).label('status_count')
+    ).join(
+        Reservation, Reservation.equipment_id == Equipment.id
+    ).group_by(
+        Equipment.id, Reservation.reservation_status
+    ).all()
+
+    for equip_id, status, count in status_counts:
+        if equip_id in equipment_usage:
+            if status.lower() == 'denied':
+                equipment_usage[equip_id]['denied_count'] = count
+            elif status.lower() == 'pending':
+                equipment_usage[equip_id]['pending_count'] = count
+            elif status.lower() == 'approved':
+                equipment_usage[equip_id]['approved_count'] = count
+
+    return jsonify(list(equipment_usage.values()))
+
+
+@api.route('/admin/analytics/reservation-trends', methods=['GET'])
+def get_reservation_trends():
+    # Get monthly reservation counts for the past year
+    now = datetime.now()
+    past_year = now - timedelta(days=365)
+
+    # Extract month from reservation date and count reservations
+    monthly_counts = db.session.query(
+        func.date_trunc('month', Reservation.res_request_date).label('month'),
+        func.count(Reservation.id).label('count')
+    ).filter(
+        Reservation.res_request_date >= past_year
+    ).group_by(
+        func.date_trunc('month', Reservation.res_request_date)
+    ).order_by(
+        func.date_trunc('month', Reservation.res_request_date)
+    ).all()
+
+    result = [
+        {
+            'month': month.strftime('%Y-%m'),
+            'count': count
+        }
+        for month, count in monthly_counts
+    ]
+
+    return jsonify(result)
+
+
+@api.route('/admin/analytics/popular-equipment', methods=['GET'])
+def get_popular_equipment():
+    # Get the most popular equipment based on reservation count
+    popular_equipment = db.session.query(
+        Equipment.id,
+        Equipment.equip_name,
+        Equipment.category,
+        func.count(Reservation.id).label('reservation_count')
+    ).join(
+        Reservation, Reservation.equipment_id == Equipment.id
+    ).group_by(
+        Equipment.id, Equipment.equip_name, Equipment.category
+    ).order_by(
+        func.count(Reservation.id).desc()
+    ).limit(10).all()
+
+    result = [
+        {
+            'id': equip_id,
+            'name': equip_name,
+            'category': category,
+            'reservation_count': count
+        }
+        for equip_id, equip_name, category, count in popular_equipment
+    ]
+
+    return jsonify(result)
+
+
+# User reservation history
+@api.route('/admin/users/<int:user_id>/reservations', methods=['GET'])
+def get_user_reservations(user_id):
+    # Check if user exists
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Get all reservations for this user
+    reservations = Reservation.query.filter_by(user_id=user_id).all()
+
+    result = []
+    for res in reservations:
+        equipment = Equipment.query.get(res.equipment_id)
+        equip_name = equipment.equip_name if equipment else "Unknown Equipment"
+
+        result.append({
+            'id': res.id,
+            'equipment_id': res.equipment_id,
+            'equipment_name': equip_name,
+            'start_date': res.res_start_date.isoformat(),
+            'end_date': res.res_end_date.isoformat(),
+            'request_date': res.res_request_date.isoformat(),
+            'quantity': res.reserved_quantity,
+            'status': res.reservation_status
+        })
+
+    return jsonify(result)
+
+
+# Get all users for admin view
+@api.route('/admin/users', methods=['GET'])
+def get_admin_users():
+    users = User.query.all()
+    result = [
+        {
+            'id': user.id,
+            'user_name': user.user_name,
+            'email': user.email,
+            'role_id': user.role_id,
+            'created_at': user.created_at.isoformat() if user.created_at else None
+        }
+        for user in users
+    ]
+    return jsonify(result)
 
 
 # Check equipment availability for specific dates

@@ -14,6 +14,9 @@ import Register from './auth/Register';
 import UserProfile from './auth/UserProfile';
 import Reservations from './views/Reservations';
 import AdminReservations from './views/AdminReservations';
+import AdminDashboard from './views/AdminDashboard';
+import AdminUserList from './views/AdminUserList';
+import UserHistory from './views/UserHistory';
 import Notifications from './views/Notifications';
 
 function App() {
@@ -39,6 +42,9 @@ function App() {
               {/* Admin-only routes */}
               <Route element={<ProtectedRoute requireAdmin={true} />}>
                 <Route path="/admin/reservations" element={<AdminReservations />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUserList />} />
+                <Route path="/admin/users/:userId" element={<UserHistory />} />
               </Route>
             </Routes>
           </div>

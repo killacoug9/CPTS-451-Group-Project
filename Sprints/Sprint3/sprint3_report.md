@@ -1,5 +1,5 @@
 # Sprint 3 Report
-Video Link:
+Video Link: https://youtu.be/hAUuYQigC14
 
 ## What's New (User Facing)
 * Notification tab
@@ -50,6 +50,12 @@ https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/
 https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/Notifications.jsx
 https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/Reservations.jsx
 https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/Reservations.css
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/AdminDashboard.jsx
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/AdminDashboard.css
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/AdminUserList.css
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/AdminUserList.jsx
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/UserHistory.css
+https://github.com/killacoug9/CPTS-451-Group-Project/blob/main/LabBookingSystem/frontend/src/views/UserHistory.jsx
 
 ## Retrospective Summary
 Here's what went well:
